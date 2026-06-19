@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: '/api'
+  apiUrl: 'https://accounting-be-8n5s.onrender.com/api'
 };
+
