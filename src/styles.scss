@@ -1,0 +1,624 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary:       #6C63FF;
+  --primary-light: #EEF0FF;
+  --primary-dark:  #4B44CC;
+  --surface:       #FFFFFF;
+  --surface-2:     #F7F8FF;
+  --surface-3:     #EDEEFF;
+  --border:        #EAEDF5;
+  --text-1:        #0F1132;
+  --text-2:        #6B7280;
+  --text-3:        #B0B7C3;
+  --success:       #22C55E;
+  --success-bg:    #EDFDF5;
+  --warning:       #F59E0B;
+  --danger:        #EF4444;
+  --danger-bg:     #FEF2F2;
+  --nav-h:         72px;
+  --nav-pill-h:    58px;
+  --header-h:      60px;
+  --radius-sm:     10px;
+  --radius-md:     16px;
+  --radius-lg:     22px;
+  --radius-xl:     28px;
+  --shadow-sm:     0 1px 4px rgba(108,99,255,.07), 0 2px 12px rgba(0,0,0,.04);
+  --shadow-md:     0 4px 20px rgba(108,99,255,.12), 0 2px 8px rgba(0,0,0,.06);
+  --shadow-lg:     0 8px 40px rgba(108,99,255,.18), 0 4px 16px rgba(0,0,0,.08);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--surface-2);
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+}
+
+// ─── App Shell ───────────────────────────────────────────────────────────────
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+// ─── Header ──────────────────────────────────────────────────────────────────
+.top-header {
+  height: var(--header-h);
+  background: var(--primary);
+  background: linear-gradient(135deg, #6C63FF 0%, #4B44CC 100%);
+  padding: 0 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  box-shadow: 0 2px 20px rgba(108,99,255,.35);
+  position: relative;
+  z-index: 10;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.02em;
+    i { font-size: 1.25rem; color: #FFD84D; filter: drop-shadow(0 0 6px rgba(255,216,77,.6)); }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255,255,255,.15);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 20px;
+    padding: 0.3rem 0.65rem 0.3rem 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #fff;
+
+    .avatar {
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      background: rgba(255,255,255,.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+  }
+
+  .logout-btn {
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.2);
+    color: #fff;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: background .15s;
+    &:active { background: rgba(255,255,255,.25); }
+  }
+}
+
+// ─── Content ─────────────────────────────────────────────────────────────────
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1rem;
+  padding-bottom: calc(var(--nav-h) + 2rem);
+  overscroll-behavior-y: contain;
+}
+
+// ─── Bottom Nav — floating pill ──────────────────────────────────────────────
+.bottom-nav {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(min(430px, 100vw) - 24px);
+  height: var(--nav-pill-h);
+  background: var(--surface);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  padding: 0 0.4rem;
+  gap: 0.1rem;
+  box-shadow:
+    0 8px 32px rgba(108,99,255,.18),
+    0 2px 8px rgba(0,0,0,.08),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  border: 1px solid rgba(108,99,255,.1);
+  z-index: 100;
+
+  a {
+    // inactive: shrink to just the icon
+    flex: 0 0 auto;
+    width: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: width .32s cubic-bezier(.4,0,.2,1);
+
+    .nav-icon-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 2.25rem;
+      padding: 0 0.65rem;
+      border-radius: 999px;
+      gap: 0.3rem;
+      transition: background .2s, transform .18s;
+      white-space: nowrap;
+      overflow: hidden;
+
+      i {
+        font-size: 1.05rem;
+        color: var(--text-3);
+        flex-shrink: 0;
+        transition: color .2s;
+      }
+    }
+
+    &:not(.active):active .nav-icon-wrap {
+      background: var(--surface-3);
+      transform: scale(.88);
+    }
+
+    // active: expand to show colored pill with label
+    &.active {
+      flex: 1;
+
+      .nav-icon-wrap {
+        background: var(--primary);
+        box-shadow: 0 3px 12px rgba(108,99,255,.4);
+        width: 100%;
+        i { color: #fff; }
+      }
+    }
+  }
+}
+
+// ─── Page Header ─────────────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.03em;
+  }
+}
+
+// ─── Stats Grid ──────────────────────────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    opacity: .07;
+    background: currentColor;
+  }
+
+  .stat-icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.6rem;
+    i { font-size: 1.1rem; }
+  }
+
+  .stat-value {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+// ─── Section Label ───────────────────────────────────────────────────────────
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 0.6rem;
+  padding-left: 0.25rem;
+}
+
+// ─── Card ────────────────────────────────────────────────────────────────────
+.m-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0.75rem;
+}
+
+// ─── Bill Cards (list) ───────────────────────────────────────────────────────
+.bill-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem 1rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  border: 1.5px solid transparent;
+
+  &:active {
+    transform: scale(.985);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+  }
+}
+
+// ─── Menu Item Cards ─────────────────────────────────────────────────────────
+.menu-item-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.875rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: transform .15s;
+  &:active { transform: scale(.985); }
+}
+
+// ─── Customer Cards ──────────────────────────────────────────────────────────
+.customer-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.875rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0.5rem;
+}
+
+// ─── Field ───────────────────────────────────────────────────────────────────
+.field {
+  label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+  }
+}
+
+// ─── Mob Section ─────────────────────────────────────────────────────────────
+.mob-section {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 0.75rem;
+}
+
+.mob-section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 0.875rem;
+}
+
+// ─── Cart Item ───────────────────────────────────────────────────────────────
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border);
+  &:last-child { border-bottom: none; }
+}
+
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  background: var(--primary-light);
+  border-radius: 10px;
+  flex-shrink: 0;
+
+  button {
+    border: none;
+    background: none;
+    width: 2.1rem;
+    height: 2.1rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: background .15s;
+    &:active { background: rgba(108,99,255,.15); }
+  }
+
+  span {
+    min-width: 1.6rem;
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: var(--text-1);
+  }
+}
+
+// ─── Total Bar ───────────────────────────────────────────────────────────────
+.total-bar {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 0.875rem 1rem;
+  box-shadow: var(--shadow-sm);
+  margin-top: 0.5rem;
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    padding: 0.18rem 0;
+    color: var(--text-2);
+  }
+
+  .total-row.grand {
+    border-top: 1.5px dashed var(--border);
+    margin-top: 0.5rem;
+    padding-top: 0.6rem;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-1);
+  }
+}
+
+// ─── Filter Bar ──────────────────────────────────────────────────────────────
+.filter-bar {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 0.875rem;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.filter-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.25rem;
+}
+
+// ─── Receipt ─────────────────────────────────────────────────────────────────
+.bill-receipt {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem;
+  width: 100%;
+  box-shadow: var(--shadow-md);
+
+  .receipt-header { text-align: center; margin-bottom: 1rem; }
+  .receipt-title { font-size: 1.1rem; font-weight: 800; color: var(--text-1); letter-spacing: -0.02em; }
+  .receipt-divider { border: none; border-top: 2px dashed var(--border); margin: 0.75rem 0; }
+  .receipt-row { display: flex; justify-content: space-between; margin-bottom: 0.35rem; font-size: 0.85rem; }
+  .receipt-total { font-size: 1rem; font-weight: 800; }
+}
+
+// ─── Badge / Chip ────────────────────────────────────────────────────────────
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+// ─── PrimeNG overrides ───────────────────────────────────────────────────────
+.p-inputtext, .p-password input, .p-select {
+  border-radius: var(--radius-sm) !important;
+  border: 1.5px solid var(--border) !important;
+  font-size: 0.9rem !important;
+  background: var(--surface-2) !important;
+  transition: border-color .2s, box-shadow .2s !important;
+
+  &:focus, &.p-focused {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(108,99,255,.15) !important;
+    background: var(--surface) !important;
+  }
+}
+
+.p-button {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  letter-spacing: 0.01em !important;
+  transition: transform .15s, box-shadow .15s !important;
+  &:active { transform: scale(.97) !important; }
+}
+
+.p-button:not(.p-button-text):not(.p-button-outlined):not(.p-button-link) {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 4px 14px rgba(108,99,255,.35) !important;
+  &:hover { background: var(--primary-dark) !important; border-color: var(--primary-dark) !important; }
+}
+
+.p-dialog {
+  border-radius: var(--radius-xl) !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg) !important;
+  max-width: min(95vw, 440px) !important;
+  .p-dialog-header {
+    padding: 1.25rem 1.25rem 0.75rem !important;
+    font-weight: 800 !important;
+    font-size: 1rem !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  .p-dialog-content { padding: 1rem 1.25rem !important; }
+  .p-dialog-footer { padding: 0.75rem 1.25rem 1.25rem !important; border-top: 1px solid var(--border) !important; }
+}
+
+.p-toast { max-width: calc(100vw - 2rem) !important; }
+
+.p-confirmdialog .p-dialog { border-radius: var(--radius-xl) !important; }
+
+// ─── Skeleton shimmer ────────────────────────────────────────────────────────
+.skeleton {
+  background: var(--border);
+  border-radius: 6px;
+  animation: shimmer 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes shimmer {
+  from { opacity: 1; }
+  to   { opacity: 0.45; }
+}
+
+// ─── FAB-style add button ────────────────────────────────────────────────────
+.fab {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 14px;
+  background: var(--primary);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(108,99,255,.4);
+  transition: transform .15s, box-shadow .15s;
+  &:active { transform: scale(.92); box-shadow: 0 2px 8px rgba(108,99,255,.3); }
+}
+
+// ─── Nav label — show only on active tab ─────────────────────────────────────
+.bottom-nav a .lbl {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  transition: max-width .32s cubic-bezier(.4,0,.2,1), opacity .25s ease;
+}
+.bottom-nav a.active .lbl {
+  max-width: 72px;
+  opacity: 1;
+}
+
+// ─── View Transitions — directional slide ────────────────────────────────────
+// Animate the root snapshot; header/nav are excluded via their own names.
+
+// Keep header and nav still — they must NOT scroll with content
+.top-header { view-transition-name: top-header; }
+.bottom-nav { view-transition-name: bottom-nav; }
+
+::view-transition-old(top-header),
+::view-transition-new(top-header),
+::view-transition-old(bottom-nav),
+::view-transition-new(bottom-nav) {
+  animation: none;
+}
+
+// Root slides (everything else, including content-area)
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: .3s;
+  animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+}
+
+html[data-vt-dir="left"] {
+  &::view-transition-old(root) { animation-name: vt-out-left;  }
+  &::view-transition-new(root) { animation-name: vt-in-right;  }
+}
+html[data-vt-dir="right"] {
+  &::view-transition-old(root) { animation-name: vt-out-right; }
+  &::view-transition-new(root) { animation-name: vt-in-left;   }
+}
+
+@keyframes vt-out-left  { to   { transform: translateX(-30%); opacity: 0; } }
+@keyframes vt-in-right  { from { transform: translateX(30%);  opacity: 0; } }
+@keyframes vt-out-right { to   { transform: translateX(30%);  opacity: 0; } }
+@keyframes vt-in-left   { from { transform: translateX(-30%); opacity: 0; } }
