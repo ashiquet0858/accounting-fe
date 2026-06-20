@@ -6,6 +6,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { ApiService } from '../../core/services/api.service';
 
@@ -20,13 +21,25 @@ interface CartItem {
 @Component({
   selector: 'app-billing',
   standalone: true,
-  imports: [FormsModule, ButtonModule, InputTextModule, InputNumberModule, SelectModule, ToastModule, DatePipe],
+  imports: [FormsModule, ButtonModule, InputTextModule, InputNumberModule, SelectModule, ToastModule, TooltipModule, DatePipe],
   providers: [MessageService],
   template: `
     <p-toast />
 
     @if (!billCreated()) {
       <div class="page-header"><h2>New Bill</h2></div>
+
+      <!-- Table indicator -->
+      @if (selectedTableName()) {
+        <div style="display:flex;align-items:center;gap:.5rem;background:var(--primary-light);border-radius:12px;padding:.6rem .875rem;margin-bottom:.75rem">
+          <i class="pi pi-table" style="color:var(--primary);font-size:.95rem"></i>
+          <span style="font-size:.85rem;font-weight:700;color:var(--primary)">{{ selectedTableName() }}</span>
+          <button (click)="selectedTableId.set(null); selectedTableName.set('')"
+            style="border:none;background:none;color:var(--primary);cursor:pointer;margin-left:auto;font-size:.8rem;padding:0">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+      }
 
       <!-- Customer -->
       <div class="mob-section">
@@ -131,9 +144,13 @@ interface CartItem {
           </div>
         </div>
 
-        <p-button label="Create Bill" icon="pi pi-check" severity="success" styleClass="w-full"
-          style="display:block;margin-top:.75rem"
-          [loading]="saving()" (onClick)="createBill()" />
+        <div style="display:flex;gap:.5rem;margin-top:.75rem">
+          <p-button label="Save Draft" icon="pi pi-save" severity="secondary" styleClass="flex-1"
+            [loading]="savingDraft()" (onClick)="saveDraft()"
+            pTooltip="Save order without customer info — finalize at billing desk" />
+          <p-button label="Create Bill" icon="pi pi-check" severity="success" styleClass="flex-1"
+            [loading]="saving()" (onClick)="createBill()" />
+        </div>
       } @else {
         <div style="text-align:center;padding:2rem;color:var(--text-3)">
           <div style="width:4rem;height:4rem;border-radius:20px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;margin:0 auto .75rem">
@@ -173,6 +190,14 @@ interface CartItem {
         <div class="receipt-row"><span style="color:var(--text-2)">Bill No</span><strong>{{ createdBill()?.bill_number }}</strong></div>
         <div class="receipt-row"><span style="color:var(--text-2)">Customer</span><span>{{ createdBill()?.customer?.name }}</span></div>
         <div class="receipt-row"><span style="color:var(--text-2)">Mobile</span><span>{{ createdBill()?.customer?.mobile }}</span></div>
+        @if (createdBill()?.table_name) {
+          <div class="receipt-row">
+            <span style="color:var(--text-2)">Table</span>
+            <span style="font-weight:700;color:var(--primary)">
+              <i class="pi pi-table" style="font-size:.72rem;margin-right:.2rem"></i>{{ createdBill()?.table_name }}
+            </span>
+          </div>
+        }
         @if (createdBill()?.created_by) {
           <div class="receipt-row">
             <span style="color:var(--text-2)">Billed by</span>
@@ -224,8 +249,11 @@ export class BillingComponent implements OnInit {
   categoryOptions = signal<string[]>([]);
   qty = 1;
   saving = signal(false);
+  savingDraft = signal(false);
   billCreated = signal(false);
   createdBill = signal<any>(null);
+  selectedTableId = signal<number | null>(null);
+  selectedTableName = signal<string>('');
 
   subtotal = computed(() =>
     parseFloat(this.cart().reduce((s, i) => s + i.quantity * i.unit_price, 0).toFixed(2))
@@ -254,6 +282,13 @@ export class BillingComponent implements OnInit {
       this.mobile = customer.mobile ?? '';
       this.customerName = customer.name ?? '';
       this.customerFound.set(true);
+    }
+
+    // Pre-fill table if navigated from Tables page
+    const table = history.state?.table;
+    if (table) {
+      this.selectedTableId.set(table.id);
+      this.selectedTableName.set(table.name);
     }
 
     this.api.getMenuItems().subscribe(items => {
@@ -310,6 +345,30 @@ export class BillingComponent implements OnInit {
 
   clearBill() { this.cart.set([]); this.mobile = ''; this.customerName = ''; this.customerFound.set(false); }
 
+  saveDraft() {
+    if (!this.selectedTableId()) {
+      this.msg.add({ severity: 'warn', summary: 'Required', detail: 'Select a table first to save a draft' }); return;
+    }
+    if (this.cart().length === 0) {
+      this.msg.add({ severity: 'warn', summary: 'Required', detail: 'Add at least one item' }); return;
+    }
+    this.savingDraft.set(true);
+    this.api.createDraftBill({
+      table_id: this.selectedTableId(),
+      items: this.cart().map(i => ({
+        menu_item_id: i.menu_item_id, item_name: i.item_name,
+        unit_price: i.unit_price, gst_rate: i.gst_rate, quantity: i.quantity
+      }))
+    }).subscribe({
+      next: () => {
+        this.msg.add({ severity: 'success', summary: 'Draft Saved', detail: 'Order saved — finalize at billing desk' });
+        this.savingDraft.set(false);
+        this.newBill();
+      },
+      error: () => { this.msg.add({ severity: 'error', summary: 'Error', detail: 'Failed to save draft' }); this.savingDraft.set(false); }
+    });
+  }
+
   createBill() {
     if (!this.mobile || !this.customerName) {
       this.msg.add({ severity: 'warn', summary: 'Required', detail: 'Customer details are required' }); return;
@@ -321,6 +380,7 @@ export class BillingComponent implements OnInit {
     this.api.createBill({
       customer_name: this.customerName,
       customer_mobile: this.mobile,
+      ...(this.selectedTableId() ? { table_id: this.selectedTableId() } : {}),
       items: this.cart().map(i => ({
         menu_item_id: i.menu_item_id, item_name: i.item_name,
         unit_price: i.unit_price, gst_rate: i.gst_rate, quantity: i.quantity
@@ -339,5 +399,11 @@ export class BillingComponent implements OnInit {
     });
   }
 
-  newBill() { this.billCreated.set(false); this.createdBill.set(null); this.clearBill(); }
+  newBill() {
+    this.billCreated.set(false);
+    this.createdBill.set(null);
+    this.selectedTableId.set(null);
+    this.selectedTableName.set('');
+    this.clearBill();
+  }
 }

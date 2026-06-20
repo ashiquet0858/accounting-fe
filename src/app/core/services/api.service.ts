@@ -29,6 +29,16 @@ export class ApiService {
 
   // Billing
   createBill(data: any) { return this.http.post<any>(`${this.base}/bills`, data); }
+  createDraftBill(data: any) { return this.http.post<any>(`${this.base}/bills/draft`, data); }
+  updateBillStatus(id: number, status: string) {
+    return this.http.patch<any>(`${this.base}/bills/${id}/status`, { status });
+  }
+  finalizeBill(id: number, data: { customer_name: string; customer_mobile: string }) {
+    return this.http.patch<any>(`${this.base}/bills/${id}/finalize`, data);
+  }
+  updateBillItems(id: number, items: any[]) {
+    return this.http.patch<any>(`${this.base}/bills/${id}/items`, { items });
+  }
   getBills(params?: any) {
     let hp = new HttpParams();
     if (params) Object.keys(params).forEach(k => params[k] && (hp = hp.set(k, params[k])));
@@ -36,6 +46,13 @@ export class ApiService {
   }
   getBill(id: number) { return this.http.get<any>(`${this.base}/bills/${id}`); }
   getBillWhatsApp(id: number) { return this.http.get(`${this.base}/bills/${id}/whatsapp`, { responseType: 'text' }); }
+
+  // Tables
+  getTables() { return this.http.get<any[]>(`${this.base}/tables`); }
+  createTable(data: any) { return this.http.post<any>(`${this.base}/tables`, data); }
+  updateTable(id: number, data: any) { return this.http.put<any>(`${this.base}/tables/${id}`, data); }
+  updateTableStatus(id: number, status: string) { return this.http.patch<any>(`${this.base}/tables/${id}/status`, { status }); }
+  deleteTable(id: number) { return this.http.delete<any>(`${this.base}/tables/${id}`); }
 
   // Users (admin only)
   getUsers() { return this.http.get<any[]>(`${this.base}/users`); }

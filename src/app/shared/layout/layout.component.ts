@@ -10,6 +10,7 @@ const ALL_TABS = [
   { route: '/dashboard', icon: 'pi pi-home',    lbl: 'Home',    adminOnly: true },
   { route: '/billing',   icon: 'pi pi-receipt', lbl: 'Bill'    },
   { route: '/bills',     icon: 'pi pi-list',    lbl: 'History' },
+  { route: '/tables',    icon: 'pi pi-table',   lbl: 'Tables'  },
   { route: '/customers', icon: 'pi pi-users',   lbl: 'People'  },
   { route: '/menu',      icon: 'pi pi-book',    lbl: 'Menu',    adminOnly: true },
   { route: '/users',     icon: 'pi pi-shield',  lbl: 'Team',    adminOnly: true },

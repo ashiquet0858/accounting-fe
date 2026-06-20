@@ -1,14 +1,12 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [DatePipe, DialogModule, ButtonModule],
+  imports: [DatePipe],
   styles: [`
     .greeting { margin-bottom: 1.25rem; }
     .greeting-name { font-size: 1.35rem; font-weight: 800; color: var(--text-1); letter-spacing: -.03em; }
@@ -210,7 +208,7 @@ import { ApiService } from '../../core/services/api.service';
       </div>
     } @else {
       @for (bill of recentBills(); track bill.id) {
-        <div class="bill-card" (click)="openBill(bill)">
+        <div class="bill-card" (click)="router.navigate(['/bills', bill.id])">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">
             <div style="display:flex;align-items:center;gap:.5rem">
               <div style="width:2rem;height:2rem;border-radius:8px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -238,67 +236,6 @@ import { ApiService } from '../../core/services/api.service';
       }
     }
 
-    <!-- Bill Detail Dialog -->
-    <p-dialog [(visible)]="detailVisible" header="Receipt" [modal]="true"
-      [style]="{width:'95vw','max-width':'420px'}" [draggable]="false">
-      @if (selectedBill()) {
-        <div class="receipt-body">
-          <div style="text-align:center;margin-bottom:1rem">
-            <div style="width:3rem;height:3rem;border-radius:14px;background:linear-gradient(135deg,#FFD84D,#FF9F43);display:flex;align-items:center;justify-content:center;margin:0 auto .5rem;box-shadow:0 4px 12px rgba(255,216,77,.35)">
-              <i class="pi pi-coffee" style="font-size:1.25rem;color:#fff"></i>
-            </div>
-            <div style="font-weight:800;font-size:1rem;color:var(--text-1)">Burfi Billing</div>
-            <div style="font-size:.75rem;color:var(--text-3);margin-top:.15rem">
-              {{ selectedBill().created_at | date:'dd/MM/yyyy HH:mm' }}
-            </div>
-          </div>
-
-          <div style="background:var(--surface-2);border-radius:12px;padding:.75rem;margin-bottom:.75rem">
-            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.25rem">
-              <span style="color:var(--text-2)">Bill No</span>
-              <strong>{{ selectedBill().bill_number }}</strong>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.25rem">
-              <span style="color:var(--text-2)">Customer</span>
-              <span>{{ selectedBill().customer?.name }}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:.82rem">
-              <span style="color:var(--text-2)">Mobile</span>
-              <span>{{ selectedBill().customer?.mobile }}</span>
-            </div>
-          </div>
-
-          @for (item of selectedBill().items; track item.id) {
-            <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
-              <span>{{ item.item_name }} ×{{ item.quantity }}</span>
-              <span style="font-weight:600">₹{{ item.subtotal }}</span>
-            </div>
-          }
-
-          <div style="margin-top:.6rem;background:var(--surface-2);border-radius:12px;padding:.75rem">
-            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.2rem">
-              <span style="color:var(--text-2)">Subtotal</span>
-              <span>₹{{ billSubtotal() }}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.2rem">
-              <span style="color:var(--text-3)">GST</span>
-              <span style="color:var(--text-3)">₹{{ selectedBill().gst_amount }}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:800;margin-top:.35rem;padding-top:.35rem;border-top:1.5px dashed var(--border)">
-              <span>Total</span>
-              <span style="color:var(--primary)">₹{{ selectedBill().total_amount }}</span>
-            </div>
-          </div>
-        </div>
-      }
-      <ng-template pTemplate="footer">
-        <div style="display:flex;gap:.5rem;width:100%">
-          <p-button label="WhatsApp" icon="pi pi-whatsapp" severity="success" styleClass="flex-1"
-            (onClick)="sendWhatsApp()" />
-          <p-button label="Close" [outlined]="true" styleClass="flex-1" (onClick)="detailVisible=false" />
-        </div>
-      </ng-template>
-    </p-dialog>
   `
 })
 export class DashboardComponent implements OnInit, OnDestroy {
@@ -311,19 +248,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   recentBills  = signal<any[]>([]);
   topItems     = signal<any[]>([]);
   hourlySales  = signal<any[]>([]);
-  selectedBill = signal<any>(null);
-  detailVisible = false;
-  timeStr      = signal('');
+  timeStr = signal('');
 
   maxHourly = computed(() =>
     Math.max(...this.hourlySales().map(h => h.total), 1)
   );
-
-  billSubtotal = computed(() => {
-    const b = this.selectedBill();
-    if (!b?.items) return '0.00';
-    return b.items.reduce((s: number, i: any) => s + Number(i.subtotal), 0).toFixed(2);
-  });
 
   get greeting() {
     const h = new Date().getHours();
@@ -370,16 +299,4 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.timeStr.set(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
   }
 
-  openBill(bill: any) {
-    this.selectedBill.set(bill);
-    this.detailVisible = true;
-  }
-
-  sendWhatsApp() {
-    const bill = this.selectedBill();
-    if (!bill) return;
-    this.api.getBillWhatsApp(bill.id).subscribe(text => {
-      window.open(`https://wa.me/91${bill.customer?.mobile?.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
-    });
-  }
 }
