@@ -154,6 +154,7 @@ const ORDER_STATUS_CFG: Record<string, { label: string; bg: string; color: strin
   `
 })
 export class TablesComponent implements OnInit {
+  router  = inject(Router);
   private api     = inject(ApiService);
   private msg     = inject(MessageService);
   private confirm = inject(ConfirmationService);

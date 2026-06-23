@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ApiService } from '../../core/services/api.service';
@@ -9,9 +8,19 @@ import { ApiService } from '../../core/services/api.service';
 @Component({
   selector: 'app-bill-detail',
   standalone: true,
-  imports: [DatePipe, ButtonModule, ToastModule],
+  imports: [DatePipe, ToastModule],
   providers: [MessageService],
   styles: [`
+    .action-btn {
+      width:100%; height:2.85rem; border-radius:12px; border:none;
+      font-size:.92rem; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:.5rem;
+      transition:transform .15s; -webkit-tap-highlight-color:transparent;
+      &:active { transform:scale(.97); }
+      &:disabled { opacity:.6; cursor:not-allowed; }
+    }
+    .btn-success { background:#22C55E; color:#fff; box-shadow:0 4px 14px rgba(34,197,94,.3); }
+    .btn-primary { background:var(--primary); color:#fff; box-shadow:0 4px 14px rgba(108,99,255,.35); }
     .back-btn {
       display:flex; align-items:center; gap:.5rem;
       background:none; border:none; cursor:pointer;
@@ -105,16 +114,28 @@ import { ApiService } from '../../core/services/api.service';
         <!-- Actions -->
         @if (bill()!.status === 'served') {
           <hr class="receipt-divider" style="margin-top:1rem" />
-          <p-button label="Collect Payment" icon="pi pi-wallet" severity="success" styleClass="w-full"
-            style="display:block;margin-top:.5rem"
-            (onClick)="router.navigate(['/bills', bill()!.id, 'finalize'])" />
+          <button class="action-btn btn-primary" style="margin-top:.5rem"
+            (click)="router.navigate(['/bills', bill()!.id, 'finalize'])">
+            <i class="pi pi-wallet"></i> Collect Payment
+          </button>
         }
 
-        @if (bill()!.status === 'paid' && bill()!.customer) {
+        @if (bill()!.status === 'paid') {
           <hr class="receipt-divider" style="margin-top:1rem" />
-          <p-button label="Send on WhatsApp" icon="pi pi-whatsapp" severity="success" styleClass="w-full"
-            style="display:block;margin-top:.5rem"
-            (onClick)="sendWhatsApp()" />
+          @if (bill()!.customer?.mobile) {
+            <button class="action-btn btn-success" style="margin-top:.5rem"
+              [disabled]="sendingWa()" (click)="sendWhatsApp()">
+              @if (sendingWa()) {
+                <i class="pi pi-spin pi-spinner"></i> Sending…
+              } @else {
+                <i class="pi pi-whatsapp"></i> Send on WhatsApp
+              }
+            </button>
+          } @else {
+            <div style="text-align:center;font-size:.78rem;color:var(--text-3);padding:.5rem 0">
+              No mobile number — WhatsApp unavailable
+            </div>
+          }
         }
       </div>
     } @else {
@@ -131,8 +152,9 @@ export class BillDetailComponent implements OnInit {
   private api   = inject(ApiService);
   private msg   = inject(MessageService);
 
-  bill    = signal<any>(null);
-  loading = signal(true);
+  bill      = signal<any>(null);
+  loading   = signal(true);
+  sendingWa = signal(false);
 
   subtotal() {
     const b = this.bill();
@@ -164,9 +186,14 @@ export class BillDetailComponent implements OnInit {
 
   sendWhatsApp() {
     const b = this.bill();
-    if (!b) return;
-    this.api.getBillWhatsApp(b.id).subscribe(text => {
-      window.open(`https://wa.me/91${b.customer?.mobile?.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
+    if (!b?.customer?.mobile) return;
+    this.sendingWa.set(true);
+    this.api.getBillWhatsApp(b.id).subscribe({
+      next: text => {
+        this.sendingWa.set(false);
+        window.open(`https://wa.me/91${b.customer.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
+      },
+      error: () => this.sendingWa.set(false)
     });
   }
 }

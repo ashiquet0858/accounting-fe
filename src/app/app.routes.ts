@@ -56,6 +56,8 @@ export const routes: Routes = [
       // Users (admin)
       { path: 'users', canActivate: [adminGuard],
         loadComponent: () => import('./features/users/users.component').then(m => m.UsersComponent) },
+      { path: 'users/add', canActivate: [adminGuard],
+        loadComponent: () => import('./features/users/user-form.component').then(m => m.UserFormComponent) },
     ]
   },
   { path: '**', redirectTo: '/billing' }
