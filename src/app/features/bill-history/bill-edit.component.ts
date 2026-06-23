@@ -185,7 +185,7 @@ export class BillEditComponent implements OnInit {
     const c = [...this.cart()];
     const ex = c.find(i => i.menu_item_id === this.selectedItem.id);
     if (ex) { ex.quantity += this.qty; }
-    else { c.push({ menu_item_id: this.selectedItem.id, item_name: this.selectedItem.name, unit_price: this.selectedItem.price, gst_rate: this.selectedItem.gst ?? 0, quantity: this.qty }); }
+    else { c.push({ menu_item_id: +this.selectedItem.id, item_name: this.selectedItem.name, unit_price: +this.selectedItem.price, gst_rate: +(this.selectedItem.gst ?? 0), quantity: +this.qty }); }
     this.cart.set(c);
     this.selectedItem = null; this.qty = 1;
   }

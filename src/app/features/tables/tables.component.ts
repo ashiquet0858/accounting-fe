@@ -258,11 +258,11 @@ export class TablesComponent implements OnInit {
     if (existing) { existing.quantity += this.qty; }
     else {
       current.push({
-        menu_item_id: this.selectedMenuItem.id,
+        menu_item_id: +this.selectedMenuItem.id,
         item_name: this.selectedMenuItem.name,
-        unit_price: this.selectedMenuItem.price,
-        gst_rate: this.selectedMenuItem.gst ?? 0,
-        quantity: this.qty
+        unit_price: +this.selectedMenuItem.price,
+        gst_rate: +(this.selectedMenuItem.gst ?? 0),
+        quantity: +this.qty
       });
     }
     this.cart.set(current);
